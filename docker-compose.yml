@@ -3,8 +3,8 @@ version: "3.8"
 services:
   web:
     build:
-      context: ./backend  # Changed from . to ./backend
-      dockerfile: Dockerfile # Now it looks for Dockerfile inside the backend folder
+      context: ./backend
+      dockerfile: Dockerfile
     environment:
       - NODE_ENV=development
       - DB_HOST=db
@@ -13,6 +13,9 @@ services:
       - DB_NAME=vuln_app
     depends_on:
       - db
+    # We mount the frontend folder so the app can find /frontend/index.html
+    volumes:
+      - ./frontend:/frontend
     labels:
       - traefik.docker.network=dokploy-network
       - traefik.enable=true
@@ -29,7 +32,6 @@ services:
       - MYSQL_DATABASE=vuln_app
     volumes:
       - mysql_data:/var/lib/mysql
-      # This stays as is because it's relative to the docker-compose.yml file
       - ./backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - dokploy-network
