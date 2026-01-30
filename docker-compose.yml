@@ -3,9 +3,8 @@ version: "3.8"
 services:
   web:
     build:
-      context: .
-      dockerfile: ./backend/Dockerfile
-    # REMOVED: ports section (this prevents the "port already allocated" error)
+      context: ./backend  # Changed from . to ./backend
+      dockerfile: Dockerfile # Now it looks for Dockerfile inside the backend folder
     environment:
       - NODE_ENV=development
       - DB_HOST=db
@@ -28,9 +27,9 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=password
       - MYSQL_DATABASE=vuln_app
-    # REMOVED: ports section (db only needs to be seen by the 'web' service internally)
     volumes:
       - mysql_data:/var/lib/mysql
+      # This stays as is because it's relative to the docker-compose.yml file
       - ./backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - dokploy-network
