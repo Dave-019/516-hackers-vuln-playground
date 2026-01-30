@@ -1,12 +1,11 @@
-version: '3.8'
+version: "3.8"
 
 services:
   web:
-    build: 
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    # REMOVED: ports section (this prevents the "port already allocated" error)
     environment:
       - NODE_ENV=development
       - DB_HOST=db
@@ -15,20 +14,30 @@ services:
       - DB_NAME=vuln_app
     depends_on:
       - db
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
+    labels:
+      - traefik.docker.network=dokploy-network
+      - traefik.enable=true
+      - traefik.http.routers.vuln-web.rule=Host(`vuln-vuln-uxbk7m-af4399-151-247-197-185.traefik.me`)
+      - traefik.http.routers.vuln-web.entrypoints=web
+      - traefik.http.services.vuln-web.loadbalancer.server.port=3000
+    networks:
+      - dokploy-network
 
   db:
     image: mysql:8.0
     environment:
       - MYSQL_ROOT_PASSWORD=password
       - MYSQL_DATABASE=vuln_app
-    ports:
-      - "3306:3306"
+    # REMOVED: ports section (db only needs to be seen by the 'web' service internally)
     volumes:
-      - ./backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
       - mysql_data:/var/lib/mysql
+      - ./backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - dokploy-network
 
 volumes:
   mysql_data:
+
+networks:
+  dokploy-network:
+    external: true
